@@ -1,47 +1,26 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
+  <main class="container mx-auto my-8 space-y-8">
+    <h1 class="text-4xl font-medium">Event Booking</h1>
+    <h2 class="text-2xl font-medium">All Events</h2>
+    <!-- render cad 4 times -->
+    <section class="grid grid-cols-2 gap-8">
+      <EventCard
+        v-for="i in 8"
+        :key="i"
+        title="Susan's book club meeting"
+        when="12th August 2024"
+        description="Bitch, I have no clue"
+        @register="console.log('Fine ho stay')"
+      />
+    </section>
+    <h2 class="text-2xl font-medium">Your bookings</h2>
+    <section class="grid grid-cols-1 gap-4">
+      <BookingItem v-for="i in 3" :key="i" />
+    </section>
   </main>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
+<script setup>
+import BookingItem from "./components/BookingItem.vue";
+import EventCard from "./components/EventCard.vue";
+</script>
