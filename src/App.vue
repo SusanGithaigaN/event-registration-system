@@ -29,6 +29,7 @@
           :key="booking.id"
           :title="booking.eventTitle"
           :status="booking.status"
+          @cancelled="cancelBooking(booking.id)"
         />
       </template>
       <template v-else>
@@ -76,15 +77,18 @@ const fetchBookings = async () => {
   }
 };
 
+// find booking by ID
+const findBookingById = (id) => bookings.value.findIndex((b) => b.id === id);
+
 // create a new booking//POST
 const handleRegistration = async (event) => {
   // prevent double booking by checking if booking exists
   // some(): check if array contains specific element
   // ^ returns true if at least one element satisfies a given condition
-  if(bookings.value.some(
-    booking => booking.eventId === event.id && booking.userId === 1
-  )){
-    alert('You have already registered for this event');
+  if (
+    bookings.value.some((booking) => booking.eventId === event.id && booking.userId === 1)
+  ) {
+    alert("You have already registered for this event");
     return;
   }
 
@@ -113,18 +117,36 @@ const handleRegistration = async (event) => {
     // check res from server
     // if ok, find booking.id
     // loop through booking[] to find id of new booking
-    if(response.ok){
-      const index = bookings.value.findIndex(
-        b => b.id === newBooking.id
-      );
+    if (response.ok) {
+      const index = findBookingById(newBooking.id);
       bookings.value[index] = await response.json();
-    }else{
-      throw new Error('Booking failed');
+    } else {
+      throw new Error("Booking failed");
     }
   } catch (e) {
     // handle error & remove booking(b) from list
     console.error(`Failed to book event: `, e);
-    bookings.value = bookings.value.filter( b=> b.id !== newBooking.id);
+    bookings.value = bookings.value.filter((b) => b.id !== newBooking.id);
+  }
+};
+
+// DELETE booking
+const cancelBooking = async (bookingId) => {
+  const index = findBookingById(bookingId);
+  const originalBooking = bookings.value[index];
+  bookings.value.splice(index, 1);
+
+  try {
+    const response = await fetch(`http://127.0.0.1:3001/bookings/ ${bookingId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Unable to cancel booking");
+    }
+  } catch (e) {
+    // if booking fails, remove 0 booking & return original bookings
+    console.error("Failed to candel booking:", e);
+    bookings.value.splice(index, 0, originalBooking);
   }
 };
 
