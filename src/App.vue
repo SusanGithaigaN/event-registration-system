@@ -28,10 +28,11 @@
           v-for="booking in bookings"
           :key="booking.id"
           :title="booking.eventTitle"
+          :status="booking.status"
         />
       </template>
       <template v-else>
-      <LoadingBookingCard v-for="i in 4 " :key="i" />
+        <LoadingBookingCard v-for="i in 4" :key="i" />
       </template>
     </section>
   </main>
@@ -77,6 +78,16 @@ const fetchBookings = async () => {
 
 // create a new booking//POST
 const handleRegistration = async (event) => {
+  // prevent double booking by checking if booking exists
+  // some(): check if array contains specific element
+  // ^ returns true if at least one element satisfies a given condition
+  if(bookings.value.some(
+    booking => booking.eventId === event.id && booking.userId === 1
+  )){
+    alert('You have already registered for this event');
+    return;
+  }
+
   const newBooking = {
     id: Date.now().toString(),
     userId: 1,
@@ -84,15 +95,37 @@ const handleRegistration = async (event) => {
     eventTitle: event.title,
   };
 
-  // store data inside bookings obj
-  await fetch("http://localhost:3001/bookings", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...newBooking,
-      status: "confirmed",
-    }),
-  });
+  // add new booking object to the booking list
+  bookings.value.push(newBooking);
+
+  // check if POST request is successful & handle errors^^ change status
+  try {
+    // store data inside bookings obj
+    // get res from fetch()
+    const response = await fetch("http://localhost:3001/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...newBooking,
+        status: "confirmed",
+      }),
+    });
+    // check res from server
+    // if ok, find booking.id
+    // loop through booking[] to find id of new booking
+    if(response.ok){
+      const index = bookings.value.findIndex(
+        b => b.id === newBooking.id
+      );
+      bookings.value[index] = await response.json();
+    }else{
+      throw new Error('Booking failed');
+    }
+  } catch (e) {
+    // handle error & remove booking(b) from list
+    console.error(`Failed to book event: `, e);
+    bookings.value = bookings.value.filter( b=> b.id !== newBooking.id);
+  }
 };
 
 // initialize data fetching
