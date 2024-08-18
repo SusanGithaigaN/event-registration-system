@@ -14,6 +14,7 @@
 const variants = {
   default: "border border-gray-200 hover:bg-gray-100",
   danger: "bg-red-300 enabled:hover:bg-red-200 text-red-800",
+  loading: "w-1/4 p-4 bg-white text-white rounded-md",
 };
 
 const props = defineProps({
